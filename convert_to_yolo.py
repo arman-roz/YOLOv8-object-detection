@@ -14,7 +14,7 @@ import json
 from collections import defaultdict
 from pathlib import Path
 
-SPLITS_DIR = Path(__file__).parent.parent / 'Dataset_1' / 'splits'
+SPLITS_DIR = Path(__file__).parent.parent.parent / 'Dataset_1' / 'splits'
 DATA_DIR   = Path(__file__).parent / 'data'
 SPLITS     = ['split_005', 'split_025', 'split_050', 'split_075', 'split_100']
 
