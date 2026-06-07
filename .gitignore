@@ -1,0 +1,36 @@
+# Training outputs and checkpoints
+results/
+runs/
+
+# Generated dataset YAML files (recreated by convert_to_yolo.py)
+data/
+
+# Generated YOLO label files (recreated by convert_to_yolo.py)
+**/labels/
+
+# Model weights
+*.pt
+*.onnx
+*.engine
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.Python
+
+# Ultralytics cache
+.ultralytics/
+
+# Jupyter
+.ipynb_checkpoints/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# IDE
+.vscode/
+.idea/
+*.code-workspace
