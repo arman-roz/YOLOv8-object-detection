@@ -1,8 +1,12 @@
 import csv
+import os
 from pathlib import Path
 
 import torch
 from ultralytics import YOLO
+
+# Reduce GPU memory fragmentation
+os.environ['PYTORCH_CUDA_ALLOC_CONF'] = 'expandable_segments:True'
 
 # ── Split to train on — change this one line to switch splits ──────────────
 SPLIT = 'split_005'  # options: split_005, split_025, split_050, split_075, split_100
@@ -13,7 +17,7 @@ MAX_EPOCHS     = 500    # safety ceiling — early stopping triggers well before
 PATIENCE       = 10     # stop if val metric doesn't improve for this many epochs
 WARMUP_EPOCHS  = 3      # linear lr ramp at start (~500–1000 iters depending on split)
 IMGSZ          = 640
-BATCH          = 8
+BATCH          = 4
 LR0            = 1e-3   # initial lr (matches SSD)
 MOMENTUM       = 0.9
 WEIGHT_DECAY   = 5e-4
