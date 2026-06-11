@@ -16,7 +16,7 @@ SPLIT = 'split_005'  # options: split_005, split_025, split_050, split_075, spli
 MAX_EPOCHS     = 500    # safety ceiling — early stopping triggers well before this
 PATIENCE       = 10     # stop if val metric doesn't improve for this many epochs
 WARMUP_EPOCHS  = 3      # linear lr ramp at start (~500–1000 iters depending on split)
-IMGSZ          = 416
+IMGSZ          = 640   # 416 was too small for DIOR's small objects (vehicles ~10px at 800→416); 640 keeps them ~8px
 BATCH          = 4
 LR0            = 1e-3   # initial lr (matches SSD)
 MOMENTUM       = 0.9
@@ -32,12 +32,15 @@ DEVICE       = '0' if torch.cuda.is_available() else 'cpu'
 
 def make_csv_logger():
     LOG_CSV.parent.mkdir(parents=True, exist_ok=True)
-    with open(LOG_CSV, 'w', newline='') as f:
-        csv.writer(f).writerow([
-            'epoch', 'train_box_loss', 'train_cls_loss', 'train_dfl_loss',
-            'val_box_loss',   'val_cls_loss',   'val_dfl_loss',
-            'mAP50', 'lr',
-        ])
+    # Append if log already exists (resume run), write header only on first run
+    write_header = not LOG_CSV.exists()
+    with open(LOG_CSV, 'a', newline='') as f:
+        if write_header:
+            csv.writer(f).writerow([
+                'epoch', 'train_box_loss', 'train_cls_loss', 'train_dfl_loss',
+                'val_box_loss', 'val_cls_loss', 'val_dfl_loss',
+                'mAP50', 'lr',
+            ])
 
     def on_fit_epoch_end(trainer):
         m   = trainer.metrics
@@ -65,8 +68,9 @@ def main():
             f"{DATA_YAML} not found. Run convert_to_yolo.py first."
         )
 
-    # Load architecture only — no pretrained weights (training from scratch)
-    model = YOLO('yolov8n.yaml')
+    # Load YOLOv8n with ImageNet-1K pretrained backbone (backbone trained on ImageNet,
+    # detection head fine-tuned on COCO — standard ultralytics transfer learning setup)
+    model = YOLO('yolov8n.pt')
     model.add_callback('on_fit_epoch_end', make_csv_logger())
 
     model.train(
@@ -82,7 +86,7 @@ def main():
         warmup_epochs=WARMUP_EPOCHS,
         warmup_momentum=0.8,
         optimizer='SGD',
-        pretrained=False,
+        pretrained=True,
         device=DEVICE,
         project=str(RESULTS_DIR),
         name=SPLIT,

@@ -4,6 +4,7 @@ Prints per-class AP and overall mAP@0.50 / mAP@0.50:0.95.
 """
 
 from pathlib import Path
+import torch
 from ultralytics import YOLO
 
 # ── Set split and checkpoint ───────────────────────────────────────────────
@@ -14,6 +15,7 @@ EPOCH  = None         # None = best checkpoint; integer = specific save_period s
 BASE_DIR    = Path(__file__).parent                          # ~/arman/YOLOv8
 DATA_YAML   = BASE_DIR / 'data' / f'{SPLIT}.yaml'
 WEIGHTS_DIR = BASE_DIR / 'results' / SPLIT / 'weights'
+DEVICE      = '0' if torch.cuda.is_available() else 'cpu'
 
 
 def resolve_checkpoint():
@@ -34,8 +36,9 @@ def main():
     model   = YOLO(str(ckpt))
     metrics = model.val(
         data=str(DATA_YAML),
-        imgsz=640,
+        imgsz=640,   # must match IMGSZ in train.py
         batch=8,
+        device=DEVICE,
         verbose=True,
         plots=True,
         save_json=True,
